@@ -1,0 +1,120 @@
+@page "/history"
+@rendermode InteractiveServer
+@inject IVoucherService VoucherService
+
+<PageTitle>Voucher History</PageTitle>
+
+<div class="no-print">
+    <h1 class="page-title">Voucher History</h1>
+
+    <!-- Search card -->
+    <div class="card">
+        <div class="card-header-row">
+            <span class="card-icon">&#128269;</span>
+            <span class="card-title">Search</span>
+        </div>
+        <div class="search-row">
+            <input type="text"
+                   class="form-input search-input"
+                   @bind="SearchQuery"
+                   @bind:event="oninput"
+                   @onkeyup="OnSearchKeyUp"
+                   placeholder="Search by voucher number, network or type..." />
+            <button class="btn btn-primary" @onclick="Search">Search</button>
+            <button class="btn btn-slate" @onclick="ClearSearch">Clear</button>
+        </div>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="loading-text">&#8987; Loading records...</div>
+    }
+    else if (Vouchers.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">&#128203;</div>
+            @if (!string.IsNullOrWhiteSpace(SearchQuery))
+            {
+                <p>No vouchers matched <strong>"@SearchQuery"</strong>.</p>
+                <p><button class="btn-link-inline" @onclick="ClearSearch">Clear search</button> to see all records.</p>
+            }
+            else
+            {
+                <p>No vouchers saved yet.</p>
+                <p>Generate and save vouchers to see them here.</p>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div style="padding: 1rem 1.5rem .5rem;">
+                <span class="result-count">@Vouchers.Count result(s)</span>
+            </div>
+            <div class="table-wrapper">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Voucher Number</th>
+                            <th>Network Name</th>
+                            <th>Voucher Type</th>
+                            <th>Generated At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var v in Vouchers)
+                        {
+                            <tr>
+                                <td><span class="id-badge">@v.Id</span></td>
+                                <td class="mono">@v.VoucherNumber</td>
+                                <td><span class="network-pill">@v.NetworkName</span></td>
+                                <td><span class="type-pill">@v.VoucherType</span></td>
+                                <td class="date-col">@v.GeneratedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private List<Voucher> Vouchers = new();
+    private string SearchQuery = string.Empty;
+    private bool IsLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAll();
+    }
+
+    private async Task LoadAll()
+    {
+        IsLoading = true;
+        Vouchers = await VoucherService.GetHistoryAsync();
+        IsLoading = false;
+    }
+
+    private async Task Search()
+    {
+        IsLoading = true;
+        if (string.IsNullOrWhiteSpace(SearchQuery))
+            Vouchers = await VoucherService.GetHistoryAsync();
+        else
+            Vouchers = await VoucherService.SearchHistoryAsync(SearchQuery.Trim());
+        IsLoading = false;
+    }
+
+    private async Task ClearSearch()
+    {
+        SearchQuery = string.Empty;
+        await LoadAll();
+    }
+
+    private async Task OnSearchKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await Search();
+    }
+}

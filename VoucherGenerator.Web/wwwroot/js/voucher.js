@@ -1,0 +1,145 @@
+window.voucherApp = {
+
+    print: function () {
+        window.print();
+    },
+
+    copyText: async function (text) {
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch {
+            // Fallback for HTTP
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+        }
+        // Toast feedback
+        const toast = document.createElement('div');
+        toast.textContent = '✓ Copied!';
+        toast.style.cssText = [
+            'position:fixed', 'bottom:1.5rem', 'right:1.5rem',
+            'background:#4f46e5', 'color:#fff',
+            'padding:.45rem 1rem', 'border-radius:8px',
+            'font-size:.875rem', 'font-family:sans-serif',
+            'box-shadow:0 4px 12px rgba(79,70,229,.35)',
+            'z-index:99999', 'opacity:1',
+            'transition:opacity .35s ease'
+        ].join(';');
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 350);
+        }, 1500);
+    },
+
+    downloadPdf: async function () {
+        const area = document.getElementById('printArea');
+        if (!area) {
+            alert('Nothing to download. Generate vouchers first.');
+            return;
+        }
+
+        const savedStyle = area.getAttribute('style') || '';
+
+        // Bring on-screen so layout is fully computed
+        area.style.cssText = 'position:fixed;left:0;top:0;z-index:-9999;width:1060px;';
+
+        // Wait two frames for layout to settle
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+        const areaRect = area.getBoundingClientRect();
+
+        // Collect the bottom Y of every complete card row (4 cards per row)
+        // These are the only safe page-break positions.
+        const cards = Array.from(area.querySelectorAll('.voucher-card'));
+        const safeBreaksDom = []; // DOM px relative to area top
+        for (let i = 0; i < cards.length; i++) {
+            if ((i + 1) % 4 === 0 || i === cards.length - 1) {
+                const rect = cards[i].getBoundingClientRect();
+                safeBreaksDom.push(rect.bottom - areaRect.top);
+            }
+        }
+
+        try {
+            const canvas = await html2canvas(area, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                width: area.scrollWidth,
+                height: area.scrollHeight,
+                windowWidth: 1100
+            });
+
+            const { jsPDF } = window.jspdf;
+            const pdf        = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+            const pageWidth  = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const margin     = 20;
+            const printWidth = pageWidth - margin * 2;
+
+            // Ratios between coordinate spaces
+            const pxPerDomPx = canvas.width / areaRect.width;   // canvas px / DOM px
+            const ptPerDomPx = printWidth   / areaRect.width;   // PDF pt   / DOM px
+            const maxPageDom = (pageHeight - margin * 2) / ptPerDomPx; // max DOM px per page
+
+            // Build page slices, snapping end points to safe row breaks
+            const pages = [];
+            let startDom = 0;
+
+            while (startDom < areaRect.height - 1) {
+                const idealEnd = startDom + maxPageDom;
+
+                // Find the last safe break that is > startDom and <= idealEnd
+                let endDom = null;
+                for (let j = safeBreaksDom.length - 1; j >= 0; j--) {
+                    if (safeBreaksDom[j] > startDom && safeBreaksDom[j] <= idealEnd) {
+                        endDom = safeBreaksDom[j];
+                        break;
+                    }
+                }
+
+                // If no row fits within the page, force-break at idealEnd (edge case)
+                if (endDom === null || endDom <= startDom) {
+                    endDom = Math.min(idealEnd, areaRect.height);
+                }
+
+                pages.push({ startDom, endDom });
+                startDom = endDom;
+            }
+
+            // Render each page slice from the canvas
+            for (let p = 0; p < pages.length; p++) {
+                const { startDom, endDom } = pages[p];
+                const startPx  = Math.round(startDom  * pxPerDomPx);
+                const heightPx = Math.round((endDom - startDom) * pxPerDomPx);
+                if (heightPx <= 0) continue;
+
+                const slice = document.createElement('canvas');
+                slice.width  = canvas.width;
+                slice.height = heightPx;
+                slice.getContext('2d').drawImage(
+                    canvas, 0, startPx, canvas.width, heightPx,
+                    0, 0, canvas.width, heightPx
+                );
+
+                if (p > 0) pdf.addPage();
+                const heightPt = (endDom - startDom) * ptPerDomPx;
+                pdf.addImage(slice.toDataURL('image/png'), 'PNG', margin, margin, printWidth, heightPt);
+            }
+
+            pdf.save('vouchers.pdf');
+
+        } catch (err) {
+            console.error('PDF generation failed:', err);
+            alert('PDF generation failed: ' + err.message);
+        } finally {
+            area.setAttribute('style', savedStyle);
+        }
+    }
+};
+
+

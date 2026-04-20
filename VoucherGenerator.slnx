@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="VoucherGenerator.Application/VoucherGenerator.Application.csproj" />
+  <Project Path="VoucherGenerator.Domain/VoucherGenerator.Domain.csproj" />
+  <Project Path="VoucherGenerator.Infrastructure/VoucherGenerator.Infrastructure.csproj" />
+  <Project Path="VoucherGenerator.Web/VoucherGenerator.Web.csproj" />
+</Solution>

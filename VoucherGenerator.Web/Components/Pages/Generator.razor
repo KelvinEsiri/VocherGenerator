@@ -1,0 +1,230 @@
+@page "/"
+@rendermode InteractiveServer
+@inject IVoucherService VoucherService
+@inject IJSRuntime JS
+
+<PageTitle>Generate Vouchers</PageTitle>
+
+<!-- ======= SCREEN ======= -->
+<div class="no-print">
+
+    <h1 class="page-title">Generate Vouchers</h1>
+
+    <!-- Input card -->
+    <div class="card">
+        <div class="card-header-row">
+            <span class="card-icon">&#9881;&#65039;</span>
+            <span class="card-title">Configuration</span>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label" for="countInput">Number of Vouchers</label>
+                <input id="countInput" type="number" class="form-input" @bind="Count" min="1" max="1000" placeholder="e.g. 50" />
+                <small class="form-hint">How many voucher codes to generate (max 1000)</small>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="digitsInput">Digits per Code</label>
+                <input id="digitsInput" type="number" class="form-input" @bind="Digits" min="1" max="50" placeholder="e.g. 12" />
+                <small class="form-hint">How many digits each code will have (max 50)</small>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="networkInput">Network Name</label>
+                <input id="networkInput" type="text" class="form-input" @bind="NetworkName" placeholder="e.g. MTN" />
+                <small class="form-hint">The network or provider name</small>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="typeInput">Voucher Type</label>
+                <input id="typeInput" type="text" class="form-input" @bind="VoucherType" placeholder="e.g. Data" />
+                <small class="form-hint">Category of this voucher batch</small>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="error-msg mt-2">&#9888;&#65039; @ErrorMessage</div>
+        }
+
+        <div class="action-bar mt-4">
+            <button class="btn btn-primary" @onclick="GenerateVouchers">
+                &#9889; Generate
+            </button>
+        </div>
+    </div>
+
+    @if (GeneratedNumbers.Count > 0)
+    {
+        <!-- Numbers box -->
+        <div class="card">
+            <div class="card-header-row">
+                <span class="card-icon">&#128290;</span>
+                <span class="card-title">Generated Numbers (@GeneratedNumbers.Count)</span>
+            </div>
+            <div class="numbers-box">
+                @foreach (var num in GeneratedNumbers)
+                {
+                    <span class="number-chip">@num</span>
+                }
+            </div>
+        </div>
+
+        <!-- Voucher detail strings -->
+        <div class="card">
+            <div class="card-header-row">
+                <span class="card-icon">&#128203;</span>
+                <span class="card-title">Voucher Details</span>
+            </div>
+            <div class="voucher-strings-box">
+                @foreach (var num in GeneratedNumbers)
+                {
+                    var line = $"Voucher Number: {num}, Network Name: {NetworkName}, Voucher Type: {VoucherType}";
+                    <div class="voucher-string-line">
+                        <span class="vsl-text">Voucher Number: <strong>@num</strong>, Network Name: <strong>@NetworkName</strong>, Voucher Type: <strong>@VoucherType</strong></span>
+                        <button class="copy-btn" title="Copy" @onclick="() => CopyLine(line)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="voucher-actions-card">
+            @if (!IsSaved)
+            {
+                <button class="btn btn-success" @onclick="SaveVouchers" disabled="@IsSaving">
+                    @if (IsSaving)
+                    {
+                        <span>⏳ Saving...</span>
+                    }
+                    else
+                    {
+                        <span>💾 Save to History</span>
+                    }
+                </button>
+            }
+            else
+            {
+                <span class="saved-badge">✓ Saved to History</span>
+            }
+            <button class="btn btn-slate" @onclick="PrintVouchers">🖨 Print</button>
+            <button class="btn btn-outline" @onclick="DownloadPdf">⬇ Download PDF</button>
+        </div>
+    }
+
+</div>
+
+<!-- ======= PRINT AREA ======= -->
+@if (GeneratedNumbers.Count > 0)
+{
+    <div class="print-area" id="printArea">
+        <div class="print-header">
+            <strong>Network: @NetworkName</strong> &nbsp;|&nbsp;
+            <strong>Type: @VoucherType</strong> &nbsp;|&nbsp;
+            Generated: @DateTime.Now.ToString("yyyy-MM-dd HH:mm") &nbsp;|&nbsp;
+            Count: @GeneratedNumbers.Count
+        </div>
+        <div class="voucher-grid">
+            @foreach (var num in GeneratedNumbers)
+            {
+                <div class="voucher-card">
+                    <div class="vc-number">@num</div>
+                    <div class="vc-network">Network Name: @NetworkName</div>
+                    <div class="vc-type">Voucher Type: @VoucherType</div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private int? Count;
+    private int? Digits;
+    private string NetworkName = string.Empty;
+    private string VoucherType = string.Empty;
+    private List<string> GeneratedNumbers = new();
+    private bool IsSaved = false;
+    private bool IsSaving = false;
+    private string ErrorMessage = string.Empty;
+
+    private void GenerateVouchers()
+    {
+        ErrorMessage = string.Empty;
+        IsSaved = false;
+
+        if (string.IsNullOrWhiteSpace(NetworkName))
+        {
+            ErrorMessage = "Please enter a Network Name.";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(VoucherType))
+        {
+            ErrorMessage = "Please enter a Voucher Type.";
+            return;
+        }
+        if (Count is null or < 1 or > 1000)
+        {
+            ErrorMessage = "Voucher count must be between 1 and 1000.";
+            return;
+        }
+        if (Digits is null or < 1 or > 50)
+        {
+            ErrorMessage = "Digits per code must be between 1 and 50.";
+            return;
+        }
+
+        try
+        {
+            GeneratedNumbers = VoucherService.GenerateVoucherNumbers(Count.Value, Digits.Value);
+        }
+        catch (InvalidOperationException ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+    }
+
+    private async Task SaveVouchers()
+    {
+        IsSaving = true;
+        ErrorMessage = string.Empty;
+        try
+        {
+            await VoucherService.SaveVouchersAsync(GeneratedNumbers, NetworkName, VoucherType);
+            IsSaved = true;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Save failed: {ex.Message}";
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    private async Task PrintVouchers()
+    {
+        await EnsureSaved();
+        await JS.InvokeVoidAsync("voucherApp.print");
+    }
+
+    private async Task DownloadPdf()
+    {
+        await EnsureSaved();
+        await JS.InvokeVoidAsync("voucherApp.downloadPdf");
+    }
+
+    private async Task EnsureSaved()
+    {
+        if (IsSaved || GeneratedNumbers.Count == 0) return;
+        await SaveVouchers();
+    }
+
+    private async Task CopyLine(string text)
+    {
+        await JS.InvokeVoidAsync("voucherApp.copyText", text);
+    }
+}
