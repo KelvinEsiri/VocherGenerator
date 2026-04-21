@@ -124,7 +124,7 @@ public partial class Generator
     private async Task CopyAllDetails()
     {
         var allDetails = string.Join(Environment.NewLine,
-            GeneratedNumbers.Select(num => $"Voucher Number: {num}, Network Name: {NetworkName}, Voucher Type: {VoucherType}"));
+            GeneratedNumbers.Select(num => $"Network Name: {NetworkName}, Voucher Number: {num}, Voucher Pass: {num}, Voucher Type: {VoucherType}"));
         await JS.InvokeVoidAsync("voucherApp.copyText", allDetails);
     }
 }
