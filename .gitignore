@@ -229,6 +229,13 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 
+# SQLite
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
 # Environment
 .env
 .env.local

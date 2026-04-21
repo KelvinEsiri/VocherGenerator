@@ -43,6 +43,12 @@ window.voucherApp = {
             return;
         }
 
+        const exportCard = area.querySelector('.print-preview-card-export');
+        if (!exportCard) {
+            alert('Export layout not found.');
+            return;
+        }
+
         const savedStyle = area.getAttribute('style') || '';
 
         // Bring on-screen so layout is fully computed
@@ -52,10 +58,12 @@ window.voucherApp = {
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
         const areaRect = area.getBoundingClientRect();
+        const exportCardRect = exportCard.getBoundingClientRect();
+        const exportBottomDom = exportCardRect.bottom - areaRect.top;
 
         // Collect the bottom Y of every complete card row (4 cards per row)
         // These are the only safe page-break positions.
-        const cards = Array.from(area.querySelectorAll('.voucher-card'));
+        const cards = Array.from(area.querySelectorAll('.preview-voucher-card'));
         const safeBreaksDom = []; // DOM px relative to area top
         for (let i = 0; i < cards.length; i++) {
             if ((i + 1) % 4 === 0 || i === cards.length - 1) {
@@ -64,13 +72,15 @@ window.voucherApp = {
             }
         }
 
+        const exportHeightDom = exportBottomDom;
+
         try {
             const canvas = await html2canvas(area, {
                 scale: 2,
                 useCORS: true,
                 backgroundColor: '#ffffff',
                 width: area.scrollWidth,
-                height: area.scrollHeight,
+                height: Math.ceil(exportHeightDom),
                 windowWidth: 1100
             });
 
@@ -89,8 +99,10 @@ window.voucherApp = {
             // Build page slices, snapping end points to safe row breaks
             const pages = [];
             let startDom = 0;
+            const minSliceDom = 6;
+            const trailingDecorationDom = 32;
 
-            while (startDom < areaRect.height - 1) {
+            while (startDom < exportHeightDom - 1) {
                 const idealEnd = startDom + maxPageDom;
 
                 // Find the last safe break that is > startDom and <= idealEnd
@@ -104,11 +116,30 @@ window.voucherApp = {
 
                 // If no row fits within the page, force-break at idealEnd (edge case)
                 if (endDom === null || endDom <= startDom) {
-                    endDom = Math.min(idealEnd, areaRect.height);
+                    endDom = Math.min(idealEnd, exportHeightDom);
+                }
+
+                if ((exportHeightDom - endDom) < minSliceDom) {
+                    endDom = exportHeightDom;
+                }
+
+                if ((endDom - startDom) < minSliceDom) {
+                    break;
                 }
 
                 pages.push({ startDom, endDom });
                 startDom = endDom;
+            }
+
+            if (pages.length > 1) {
+                const lastPage = pages[pages.length - 1];
+                const previousPage = pages[pages.length - 2];
+                const trailingHeightDom = lastPage.endDom - lastPage.startDom;
+
+                if (trailingHeightDom <= trailingDecorationDom) {
+                    previousPage.endDom = lastPage.endDom;
+                    pages.pop();
+                }
             }
 
             // Render each page slice from the canvas
