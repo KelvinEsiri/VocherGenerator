@@ -9,7 +9,7 @@ public partial class History
     private string SearchQuery = string.Empty;
     private bool IsLoading = true;
     private int CurrentPage = 1;
-    private const int PageSize = 10;
+    private const int PageSize = 100;
 
     private int TotalPages => Math.Max(1, (int)Math.Ceiling(Vouchers.Count / (double)PageSize));
     private IEnumerable<Voucher> PagedVouchers => Vouchers.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
