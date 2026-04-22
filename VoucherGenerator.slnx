@@ -4,3 +4,4 @@
   <Project Path="VoucherGenerator.Infrastructure/VoucherGenerator.Infrastructure.csproj" />
   <Project Path="VoucherGenerator.Web/VoucherGenerator.Web.csproj" />
 </Solution>
+
