@@ -37,13 +37,14 @@ public class VoucherService : IVoucherService
         return new List<string>(seen);
     }
 
-    public async Task SaveVouchersAsync(List<string> numbers, string networkName, string voucherType)
+    public async Task SaveVouchersAsync(List<string> numbers, string networkName, string voucherType, string validTill)
     {
         var vouchers = numbers.Select(n => new Voucher
         {
             VoucherNumber = n,
             NetworkName = networkName,
             VoucherType = voucherType,
+            ValidTill = validTill,
             GeneratedAt = DateTime.UtcNow
         });
         await _repo.AddRangeAsync(vouchers);

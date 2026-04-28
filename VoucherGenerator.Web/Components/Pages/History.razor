@@ -23,11 +23,11 @@
                    @bind="SearchQuery"
                    @bind:event="oninput"
                    @onkeyup="OnSearchKeyUp"
-                   placeholder="Search by voucher number, network or type..." />
+                   placeholder="Search by voucher number, network, type, or valid till..." />
                 <button class="btn btn-primary" @onclick="Search">Search</button>
                 <button class="btn btn-soft" @onclick="ClearSearch">Clear</button>
             </div>
-            <small class="form-hint">Search by voucher number, network name, or voucher type</small>
+            <small class="form-hint">Search by voucher number, network name, voucher type, or valid till</small>
         </div>
     </section>
 
@@ -85,6 +85,7 @@
                             <th>Voucher Number</th>
                             <th>Network Name</th>
                             <th>Voucher Type</th>
+                            <th>Valid Till</th>
                             <th>Generated At</th>
                         </tr>
                     </thead>
@@ -101,6 +102,7 @@
                                 </td>
                                 <td><span class="history-tag network-pill">@entry.voucher.NetworkName</span></td>
                                 <td><span class="history-tag type-pill">@entry.voucher.VoucherType</span></td>
+                                <td><span class="history-tag valid-pill">@entry.voucher.ValidTill</span></td>
                                 <td class="date-col">@entry.voucher.GeneratedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
                             </tr>
                         }

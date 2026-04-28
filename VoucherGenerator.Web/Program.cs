@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using VoucherGenerator.Application.Interfaces;
 using VoucherGenerator.Application.Services;
@@ -22,12 +23,38 @@ builder.Services.AddScoped<IVoucherService, VoucherService>();
 
 var app = builder.Build();
 
-// Ensure the SQLite database is created
+// Ensure the SQLite database is created and the new column exists
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
+
+    var connection = db.Database.GetDbConnection();
+    connection.Open();
+    using var pragmaCmd = connection.CreateCommand();
+    pragmaCmd.CommandText = "PRAGMA table_info(\"Vouchers\")";
+
+    var hasValidTill = false;
+    using (var reader = pragmaCmd.ExecuteReader())
+    {
+        while (reader.Read())
+        {
+            if (reader.GetString(1).Equals("ValidTill", StringComparison.OrdinalIgnoreCase))
+            {
+                hasValidTill = true;
+                break;
+            }
+        }
+    }
+
+    if (!hasValidTill)
+    {
+        using var alterCmd = connection.CreateCommand();
+        alterCmd.CommandText = "ALTER TABLE \"Vouchers\" ADD COLUMN \"ValidTill\" TEXT NOT NULL DEFAULT ''";
+        alterCmd.ExecuteNonQuery();
+    }
 }
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

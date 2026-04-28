@@ -26,7 +26,8 @@ public class VoucherRepository : IVoucherRepository
         return _db.Vouchers
             .Where(v => v.VoucherNumber.ToLower().Contains(q)
                      || v.NetworkName.ToLower().Contains(q)
-                     || v.VoucherType.ToLower().Contains(q))
+                     || v.VoucherType.ToLower().Contains(q)
+                     || v.ValidTill.ToLower().Contains(q))
             .OrderByDescending(v => v.GeneratedAt)
             .ToListAsync();
     }

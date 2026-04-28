@@ -1,0 +1,42 @@
+<div class="preview-voucher-card @CssClass">
+    <div class="preview-voucher-number">@Number</div>
+    <div class="preview-voucher-meta" title="@BuildMetaLine("Network Name", NetworkName)">
+        <span class="preview-voucher-label">Network Name:</span>
+        <span class="preview-voucher-value">@FormatValue(NetworkName)</span>
+    </div>
+    <div class="preview-voucher-meta" title="@BuildMetaLine("Voucher Type", VoucherType)">
+        <span class="preview-voucher-label">Voucher Type:</span>
+        <span class="preview-voucher-value">@FormatValue(VoucherType)</span>
+    </div>
+    <div class="preview-voucher-meta" title="@BuildMetaLine("Valid Till", ValidTill)">
+        <span class="preview-voucher-label">Valid Till:</span>
+        <span class="preview-voucher-value">@FormatValue(ValidTill)</span>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Number { get; set; } = string.Empty;
+
+    [Parameter]
+    public string NetworkName { get; set; } = string.Empty;
+
+    [Parameter]
+    public string VoucherType { get; set; } = string.Empty;
+
+    [Parameter]
+    public string ValidTill { get; set; } = string.Empty;
+
+    [Parameter]
+    public string CssClass { get; set; } = string.Empty;
+
+    private static string BuildMetaLine(string label, string? value)
+    {
+        return $"{label}: {FormatValue(value)}";
+    }
+
+    private static string FormatValue(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? "N/A" : value.Trim();
+    }
+}

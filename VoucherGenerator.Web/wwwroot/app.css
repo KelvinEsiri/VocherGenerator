@@ -264,6 +264,87 @@ a:hover { color: #3730a3; }
     font-size: 1.05rem;
 }
 
+.generator-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.generator-hero-copy {
+    max-width: 640px;
+}
+
+.generator-eyebrow {
+    margin-bottom: .4rem;
+    color: #3166e0;
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.generator-title {
+    margin-bottom: .45rem !important;
+    font-size: 1.9rem !important;
+}
+
+.generator-subtitle {
+    color: #607089;
+    max-width: 56ch;
+    font-size: .98rem;
+}
+
+.generator-hero-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(96px, 1fr));
+    gap: .75rem;
+    min-width: min(100%, 340px);
+}
+
+.hero-metric {
+    padding: .9rem 1rem;
+    border: 1px solid #d9e2ef;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    box-shadow: 0 10px 30px rgba(49, 102, 224, .06);
+}
+
+.hero-metric-label {
+    display: block;
+    margin-bottom: .25rem;
+    color: #71809a;
+    font-size: .74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+.hero-metric-value {
+    color: #1f2a44;
+    font-size: 1.15rem;
+}
+
+.generator-summary-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .55rem;
+    margin-bottom: 1rem;
+}
+
+.summary-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: .46rem .85rem;
+    border-radius: 999px;
+    background: #eef4ff;
+    color: #315fdf;
+    border: 1px solid #d4e0fb;
+    font-size: .82rem;
+    font-weight: 600;
+}
+
 .generator-card {
     padding: 0;
     border: 1px solid #d9e2ef;
@@ -314,8 +395,19 @@ a:hover { color: #3730a3; }
 }
 
 .config-card .form-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     padding: 16px 18px 12px;
     gap: 1rem 1.5rem;
+}
+
+.generator-setup-card {
+    margin-bottom: 1rem;
+}
+
+.generator-panel-note {
+    padding: 0 18px 4px;
+    color: #607089;
+    font-size: .9rem;
 }
 
 .config-card .form-group {
@@ -473,6 +565,8 @@ a:hover { color: #3730a3; }
 .vsl-text {
     min-width: 0;
     overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 .line-index {
@@ -555,14 +649,48 @@ a:hover { color: #3730a3; }
     border: 1px solid #b7e4c8;
 }
 
+.generator-results-grid {
+    display: grid;
+    grid-template-columns: minmax(0, .95fr) minmax(0, 1.35fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.result-panel {
+    min-width: 0;
+}
+
+.generator-actions-card {
+    margin-bottom: 1rem;
+}
+
 .print-preview-shell {
-    margin-top: .9rem;
+    margin: .9rem auto 0;
+    max-width: 1000px;
+}
+
+.preview-shell-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: .65rem;
+}
+
+.preview-eyebrow {
+    margin-bottom: .2rem;
 }
 
 .preview-title {
     color: #6a768b;
-    font-size: .9rem;
-    margin: 0 0 .55rem 1rem;
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.preview-shell-note {
+    color: #71809a;
+    font-size: .84rem;
 }
 
 .print-preview-card {
@@ -625,7 +753,7 @@ a:hover { color: #3730a3; }
     border-radius: 8px;
     padding: .7rem .9rem;
     background: #fff;
-    min-height: 96px;
+    min-height: 106px;
 }
 
 .preview-voucher-number {
@@ -644,6 +772,20 @@ a:hover { color: #3730a3; }
     font-size: .84rem;
     color: #334155;
     line-height: 1.35;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
+}
+
+.preview-voucher-label {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.preview-voucher-value {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 .preview-more {
@@ -657,12 +799,35 @@ a:hover { color: #3730a3; }
 .section { margin-bottom: 1.5rem; }
 
 @media (max-width: 900px) {
+    .generator-hero,
+    .preview-shell-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .generator-hero-metrics,
+    .config-card .form-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .generator-results-grid {
+        grid-template-columns: 1fr;
+    }
+
     .preview-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 700px) {
+    .generator-title {
+        font-size: 1.55rem !important;
+    }
+
+    .config-card .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .generator-card .card-header-row,
     .config-card .form-grid,
     .panel-footer,
@@ -690,6 +855,11 @@ a:hover { color: #3730a3; }
         width: 100%;
     }
 
+    .generator-panel-note,
+    .preview-shell-note {
+        font-size: .85rem;
+    }
+
     .action-row,
     .voucher-actions-card {
         flex-direction: column;
@@ -712,6 +882,7 @@ a:hover { color: #3730a3; }
 }
 
 @media (max-width: 560px) {
+    .generator-hero-metrics,
     .form-grid,
     .preview-grid {
         grid-template-columns: 1fr;
@@ -975,8 +1146,8 @@ a:hover { color: #3730a3; }
     position: absolute;
     left: -9999px;
     top: 0;
-    width: 1060px;
-    padding: 20px 24px;
+    width: 1000px;
+    padding: 0;
     background: #fff;
     pointer-events: none;
 }
@@ -1020,6 +1191,10 @@ a:hover { color: #3730a3; }
     .no-print,
     nav, header, footer { display: none !important; }
 
+    @page {
+        margin: 12mm;
+    }
+
     body, html {
         margin: 0 !important;
         padding: 0 !important;
@@ -1029,8 +1204,35 @@ a:hover { color: #3730a3; }
     .print-area {
         position: static !important;
         left: 0 !important;
-        width: auto !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+        max-width: 1000px !important;
+        padding: 0 !important;
         pointer-events: auto !important;
+    }
+
+    .print-preview-card,
+    .print-preview-card-export {
+        width: 100% !important;
+        padding: 14px 16px 18px !important;
+    }
+
+    .voucher-card {
+        padding: .62rem .72rem !important;
+    }
+
+    .voucher-card .preview-voucher-number {
+        font-size: .9rem !important;
+        margin-bottom: .38rem !important;
+    }
+
+    .voucher-card .preview-voucher-meta {
+        font-size: .72rem !important;
+        line-height: 1.22 !important;
+    }
+
+    .voucher-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     }
 
     .print-preview-card-export {

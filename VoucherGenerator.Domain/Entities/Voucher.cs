@@ -6,5 +6,6 @@ public class Voucher
     public string VoucherNumber { get; set; } = string.Empty;
     public string NetworkName { get; set; } = string.Empty;
     public string VoucherType { get; set; } = string.Empty;
+    public string ValidTill { get; set; } = string.Empty;
     public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
 }

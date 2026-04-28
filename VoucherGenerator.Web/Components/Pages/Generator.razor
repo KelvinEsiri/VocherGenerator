@@ -5,11 +5,41 @@
 
 <PageTitle>Generate Vouchers</PageTitle>
 
-<!-- ======= SCREEN ======= -->
 <div class="generator-page no-print">
-    <h1 class="page-title">Generate Vouchers</h1>
+    <section class="generator-hero">
+        <div class="generator-hero-copy">
+            <p class="generator-eyebrow">Voucher Studio</p>
+            <h1 class="page-title generator-title">Generate Vouchers</h1>
+            <p class="generator-subtitle">Build a batch, review the real card layout, then save, print, or export from the same source structure.</p>
+        </div>
 
-    <section class="card generator-card config-card">
+        <div class="generator-hero-metrics">
+            <div class="hero-metric">
+                <span class="hero-metric-label">Ready</span>
+                <strong class="hero-metric-value">@(HasGeneratedNumbers ? GeneratedNumbers.Count : 0)</strong>
+            </div>
+            <div class="hero-metric">
+                <span class="hero-metric-label">Digits</span>
+                <strong class="hero-metric-value">@(Digits ?? 0)</strong>
+            </div>
+            <div class="hero-metric">
+                <span class="hero-metric-label">Updated</span>
+                <strong class="hero-metric-value">@(GeneratedAt?.ToString("HH:mm") ?? "--:--")</strong>
+            </div>
+        </div>
+    </section>
+
+    @if (HasGeneratedNumbers)
+    {
+        <div class="generator-summary-strip">
+            <span class="summary-chip">@GeneratedNumbers.Count vouchers ready</span>
+            <span class="summary-chip">@BuildMetaLine("Network Name", NetworkName)</span>
+            <span class="summary-chip">@BuildMetaLine("Voucher Type", VoucherType)</span>
+            <span class="summary-chip">@BuildMetaLine("Valid Till", ValidTill)</span>
+        </div>
+    }
+
+    <section class="card generator-card config-card generator-setup-card">
         <div class="card-header-row">
             <span class="card-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -19,8 +49,10 @@
                     <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
                 </svg>
             </span>
-            <span class="card-title">Configuration</span>
+            <span class="card-title">Batch Setup</span>
         </div>
+
+        <p class="generator-panel-note">Use one batch configuration for code generation, saved history, print output, and PDF export.</p>
 
         <div class="form-grid">
             <div class="form-group">
@@ -42,6 +74,11 @@
                 <label class="form-label" for="typeInput">Voucher Type</label>
                 <input id="typeInput" type="text" class="form-input" @bind="VoucherType" placeholder="Data" />
                 <small class="form-hint">Category of this batch</small>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="validTillInput">Valid Till</label>
+                <input id="validTillInput" type="text" class="form-input" @bind="ValidTill" placeholder="e.g. 2026-08-31" />
+                <small class="form-hint">Expiry or validity date</small>
             </div>
         </div>
 
@@ -72,7 +109,7 @@
                     <span>Generate</span>
                 }
             </button>
-            <button class="btn btn-soft" @onclick="ClearAll" disabled="@(GeneratedNumbers.Count == 0 && string.IsNullOrWhiteSpace(NetworkName) && string.IsNullOrWhiteSpace(VoucherType) && Count is null && Digits is null)">
+            <button class="btn btn-soft" @onclick="ClearAll" disabled="@(!CanClear)">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
@@ -85,87 +122,89 @@
         </div>
     </section>
 
-    @if (GeneratedNumbers.Count > 0)
+    @if (HasGeneratedNumbers)
     {
-        <section class="card generator-card">
-            <div class="card-header-row header-with-action">
-                <div class="header-copy-wrap">
-                    <span class="card-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="3" width="7" height="7"></rect>
-                            <rect x="14" y="14" width="7" height="7"></rect>
-                            <rect x="3" y="14" width="7" height="7"></rect>
-                        </svg>
-                    </span>
-                    <span class="card-title card-title-strong">Generated Codes (@GeneratedNumbers.Count)</span>
-                </div>
-                <button class="btn-icon" title="Copy all codes" @onclick="CopyAllCodes">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                </button>
-            </div>
-            <div class="numbers-box compact-codes-box">
-                @foreach (var entry in GeneratedNumbers.Select((num, index) => new { num, index }))
-                {
-                    <button type="button" class="number-chip" @onclick="() => CopyCode(entry.num)" title="Click to copy">
-                        <span class="number-chip-index">@(entry.index + 1)</span>
-                        <span class="number-chip-value">@entry.num</span>
-                    </button>
-                }
-            </div>
-            <div class="inline-note">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="16" x2="12" y2="12"></line>
-                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                </svg>
-                <span>Click any code to copy it</span>
-            </div>
-        </section>
-
-        <section class="card generator-card">
-            <div class="card-header-row header-with-action">
-                <div class="header-copy-wrap">
-                    <span class="card-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="8" y1="6" x2="21" y2="6"></line>
-                            <line x1="8" y1="12" x2="21" y2="12"></line>
-                            <line x1="8" y1="18" x2="21" y2="18"></line>
-                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                        </svg>
-                    </span>
-                    <span class="card-title card-title-strong">Voucher Details</span>
-                </div>
-                <button class="btn-icon" title="Copy all details" @onclick="CopyAllDetails">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                </button>
-            </div>
-            <div class="voucher-strings-box detail-list-box">
-                @foreach (var entry in GeneratedNumbers.Select((num, index) => new { num, index }))
-                {
-                    <div class="voucher-string-line">
-                        <span class="line-index">@(entry.index + 1)</span>
-                        <span class="vsl-text">Network Name: @NetworkName, Voucher Number: @entry.num, Voucher Pass: @entry.num, Voucher Type: @VoucherType</span>
-                        <button class="copy-btn" title="Copy this line" @onclick='() => CopyLine($"Network Name: {NetworkName}, Voucher Number: {entry.num}, Voucher Pass: {entry.num}, Voucher Type: {VoucherType}")'>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        <div class="generator-results-grid">
+            <section class="card generator-card result-panel">
+                <div class="card-header-row header-with-action">
+                    <div class="header-copy-wrap">
+                        <span class="card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
                             </svg>
-                        </button>
+                        </span>
+                        <span class="card-title card-title-strong">Generated Codes</span>
                     </div>
-                }
-            </div>
-        </section>
+                    <button class="btn-icon" title="Copy all codes" @onclick="CopyAllCodes">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="numbers-box compact-codes-box">
+                    @foreach (var entry in GeneratedNumbers.Select((num, index) => new { num, index }))
+                    {
+                        <button type="button" class="number-chip" @onclick="() => CopyCode(entry.num)" title="Click to copy">
+                            <span class="number-chip-index">@(entry.index + 1)</span>
+                            <span class="number-chip-value">@entry.num</span>
+                        </button>
+                    }
+                </div>
+                <div class="inline-note">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <span>Click any code to copy it instantly.</span>
+                </div>
+            </section>
 
-        <section class="card generator-card voucher-actions-card">
+            <section class="card generator-card result-panel">
+                <div class="card-header-row header-with-action">
+                    <div class="header-copy-wrap">
+                        <span class="card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="8" y1="6" x2="21" y2="6"></line>
+                                <line x1="8" y1="12" x2="21" y2="12"></line>
+                                <line x1="8" y1="18" x2="21" y2="18"></line>
+                                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                            </svg>
+                        </span>
+                        <span class="card-title card-title-strong">Voucher Details</span>
+                    </div>
+                    <button class="btn-icon" title="Copy all details" @onclick="CopyAllDetails">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="voucher-strings-box detail-list-box">
+                    @foreach (var entry in GeneratedNumbers.Select((num, index) => new { num, index }))
+                    {
+                        <div class="voucher-string-line">
+                            <span class="line-index">@(entry.index + 1)</span>
+                            <span class="vsl-text" title="@BuildVoucherDetail(entry.num)">@BuildVoucherDetail(entry.num)</span>
+                            <button class="copy-btn" title="Copy this line" @onclick='() => CopyLine(BuildVoucherDetail(entry.num))'>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    }
+                </div>
+            </section>
+        </div>
+
+        <section class="card generator-card voucher-actions-card generator-actions-card">
             <div class="action-row">
                 <div class="action-group action-group-left">
                     @if (!IsSaved)
@@ -215,47 +254,37 @@
                 </div>
             </div>
 
-            <small class="form-hint action-hint">Save this batch to your voucher history</small>
+            <small class="form-hint action-hint">Save the current batch once, then print or export from the same verified card layout.</small>
         </section>
 
         <section class="print-preview-shell">
-            <div class="preview-title">Print Preview (shown when printing)</div>
+            <div class="preview-shell-header">
+                <div>
+                    <p class="generator-eyebrow preview-eyebrow">Output Layout</p>
+                    <div class="preview-title">Print Preview</div>
+                </div>
+                <span class="preview-shell-note">Matches the printable/exported voucher card component.</span>
+            </div>
             <div class="print-preview-card">
-
                 <div class="preview-grid">
-                    @foreach (var num in GeneratedNumbers.Take(8))
+                    @foreach (var num in GeneratedNumbers)
                     {
-                        <div class="preview-voucher-card">
-                            <div class="preview-voucher-number">@num</div>
-                            <div class="preview-voucher-meta">Network Name: @NetworkName</div>
-                            <div class="preview-voucher-meta">Voucher Type: @VoucherType</div>
-                        </div>
+                        <VoucherCard Number="@num" NetworkName="@NetworkName" VoucherType="@VoucherType" ValidTill="@ValidTill" />
                     }
                 </div>
-
-                @if (GeneratedNumbers.Count > 8)
-                {
-                    <div class="preview-more">...and @(GeneratedNumbers.Count - 8) more vouchers</div>
-                }
             </div>
         </section>
     }
 </div>
 
-<!-- ======= PRINT AREA ======= -->
-@if (GeneratedNumbers.Count > 0)
+@if (HasGeneratedNumbers)
 {
     <div class="print-area" id="printArea">
         <div class="print-preview-card print-preview-card-export">
-
             <div class="preview-grid voucher-grid">
             @foreach (var num in GeneratedNumbers)
             {
-                <div class="preview-voucher-card voucher-card">
-                    <div class="preview-voucher-number vc-number">@num</div>
-                    <div class="preview-voucher-meta vc-network">Network Name: @NetworkName</div>
-                    <div class="preview-voucher-meta vc-type">Voucher Type: @VoucherType</div>
-                </div>
+                <VoucherCard Number="@num" NetworkName="@NetworkName" VoucherType="@VoucherType" ValidTill="@ValidTill" CssClass="voucher-card" />
             }
             </div>
         </div>
