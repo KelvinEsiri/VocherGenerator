@@ -1,0 +1,86 @@
+@using Microsoft.AspNetCore.Components.Web
+
+@if (IsOpen)
+{
+    <div class="app-modal-backdrop"
+         @onclick="HandleBackdropClick"
+         @onkeydown="HandleKeyDown"
+         tabindex="0"
+         @ref="BackdropRef">
+        <section class="app-modal @DialogClass"
+                 @onclick:stopPropagation="true"
+                 role="dialog"
+                 aria-modal="true"
+                 aria-label="@AriaLabel">
+            <header class="app-modal-header">
+                <div>
+                    @if (!string.IsNullOrWhiteSpace(Eyebrow))
+                    {
+                        <p class="app-modal-eyebrow">@Eyebrow</p>
+                    }
+                    <h2 class="app-modal-title">@Title</h2>
+                </div>
+                <button class="app-modal-close-icon" @onclick="CloseAsync" aria-label="Close dialog">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </header>
+
+            <div class="app-modal-body">
+                @ChildContent
+            </div>
+
+            @if (FooterContent is not null)
+            {
+                <footer class="app-modal-footer">
+                    @FooterContent
+                </footer>
+            }
+        </section>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Eyebrow { get; set; } = string.Empty;
+    [Parameter] public string AriaLabel { get; set; } = "Dialog";
+    [Parameter] public string DialogClass { get; set; } = string.Empty;
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? FooterContent { get; set; }
+
+    private ElementReference BackdropRef;
+    private bool FocusOnRender;
+
+    protected override void OnParametersSet()
+    {
+        if (IsOpen)
+        {
+            FocusOnRender = true;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (FocusOnRender && IsOpen)
+        {
+            FocusOnRender = false;
+            await BackdropRef.FocusAsync();
+        }
+    }
+
+    private Task HandleBackdropClick() => CloseAsync();
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            await CloseAsync();
+        }
+    }
+
+    private Task CloseAsync() => OnClose.InvokeAsync();
+}

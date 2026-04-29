@@ -1,0 +1,43 @@
+@if (TotalPages > 1)
+{
+    <div class="history-pagination-bar">
+        <span class="history-page-summary">Showing @PageStart to @PageEnd of @TotalCount</span>
+        <div class="history-pagination-controls">
+            <button class="btn btn-soft pagination-btn" @onclick="() => OnPrevious.InvokeAsync()" disabled="@(CurrentPage == 1)">Previous</button>
+            @foreach (var pageNumber in VisiblePages)
+            {
+                <button class="btn @(pageNumber == CurrentPage ? "btn-primary" : "btn-soft") pagination-btn"
+                        @onclick="() => OnGoTo.InvokeAsync(pageNumber)">@(pageNumber)</button>
+            }
+            <button class="btn btn-soft pagination-btn" @onclick="() => OnNext.InvokeAsync()" disabled="@(CurrentPage == TotalPages)">Next</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int TotalPages { get; set; }
+    [Parameter] public int PageStart { get; set; }
+    [Parameter] public int PageEnd { get; set; }
+    [Parameter] public int TotalCount { get; set; }
+
+    [Parameter] public EventCallback OnPrevious { get; set; }
+    [Parameter] public EventCallback OnNext { get; set; }
+    [Parameter] public EventCallback<int> OnGoTo { get; set; }
+
+    private IEnumerable<int> VisiblePages
+    {
+        get
+        {
+            var start = Math.Max(1, CurrentPage - 1);
+            var end = Math.Min(TotalPages, start + 2);
+
+            if (end - start < 2)
+            {
+                start = Math.Max(1, end - 2);
+            }
+
+            return Enumerable.Range(start, end - start + 1);
+        }
+    }
+}

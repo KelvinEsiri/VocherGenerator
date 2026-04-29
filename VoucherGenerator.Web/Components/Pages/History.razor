@@ -110,20 +110,14 @@
                 </table>
             </div>
 
-            @if (TotalPages > 1)
-            {
-                <div class="history-pagination-bar">
-                    <span class="history-page-summary">Showing @PageStart to @PageEnd of @Vouchers.Count</span>
-                    <div class="history-pagination-controls">
-                        <button class="btn btn-soft pagination-btn" @onclick="PreviousPage" disabled="@(CurrentPage == 1)">Previous</button>
-                        @foreach (var pageNumber in VisiblePages)
-                        {
-                            <button class="btn @(pageNumber == CurrentPage ? "btn-primary" : "btn-soft") pagination-btn" @onclick="() => GoToPage(pageNumber)">@(pageNumber)</button>
-                        }
-                        <button class="btn btn-soft pagination-btn" @onclick="NextPage" disabled="@(CurrentPage == TotalPages)">Next</button>
-                    </div>
-                </div>
-            }
+            <PaginationBar CurrentPage="@CurrentPage"
+                           TotalPages="@TotalPages"
+                           PageStart="@PageStart"
+                           PageEnd="@PageEnd"
+                           TotalCount="@Vouchers.Count"
+                           OnPrevious="PreviousPage"
+                           OnNext="NextPage"
+                           OnGoTo="GoToPage" />
         </section>
     }
 </div>

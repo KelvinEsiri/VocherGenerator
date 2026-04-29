@@ -1140,6 +1140,319 @@ a:hover { color: #3730a3; }
 }
 
 /* =====================================================
+   IMAGE CAPTURE PAGE
+   ===================================================== */
+.image-upload-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.image-results-card,
+.image-preview-card,
+.image-upload-card {
+    padding: 0;
+}
+
+.image-filename-group {
+    padding: 14px 18px 0;
+}
+
+.image-feedback {
+    margin: .75rem 18px .25rem;
+}
+
+.image-success-message {
+    color: #0b7f49;
+    font-weight: 700;
+    font-size: .9rem;
+    background: #e8f9ef;
+    border: 1px solid #b7e4c8;
+    border-radius: 8px;
+    padding: .7rem .85rem;
+}
+
+.image-results-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: .8rem;
+}
+
+.image-table-hint {
+    font-size: .78rem;
+    color: #607089;
+}
+
+.image-table-hint strong {
+    color: #2d4ca8;
+}
+
+.image-search-panel {
+    padding-top: 0;
+    border-top: 1px solid #e8edf5;
+}
+
+.image-search-row {
+    justify-content: space-between;
+}
+
+.image-action-group {
+    display: inline-flex;
+    gap: .4rem;
+    flex-wrap: wrap;
+}
+
+.image-table-thumb {
+    width: 52px;
+    height: 36px;
+    object-fit: cover;
+    border: 1px solid #d7e0ed;
+    border-radius: 6px;
+    background: #f8fbff;
+}
+
+.image-thumb-fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 36px;
+    border: 1px dashed #d7e0ed;
+    border-radius: 6px;
+    color: #94a3b8;
+    font-size: .72rem;
+}
+
+/* Camera viewport */
+.camera-area {
+    position: relative;
+    margin: 14px 18px;
+    border: 1.5px dashed #d3dce9;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f8faff;
+    min-height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.camera-area--live {
+    border-color: #4f46e5;
+    border-style: solid;
+}
+
+/* The <video> element is always in the DOM; hide it until the camera is active */
+.camera-video {
+    display: none;
+    width: 100%;
+    height: auto;
+    max-height: 480px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.camera-area--live .camera-video {
+    display: block;
+}
+
+.camera-snapshot-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 480px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.camera-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .65rem;
+    color: #94a3b8;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    font-size: .95rem;
+}
+
+.camera-placeholder strong {
+    color: #475569;
+}
+
+/* Saved-image preview */
+.image-row-selected {
+    background: #eef4ff;
+}
+
+.image-preview-wrapper {
+    padding: 14px 18px 18px;
+}
+
+.captured-image-preview {
+    display: block;
+    width: 100%;
+    max-height: 520px;
+    object-fit: contain;
+    border: 1px solid #d7e0ed;
+    border-radius: 10px;
+    background: #f8fbff;
+}
+
+.app-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, .6);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    backdrop-filter: blur(2px);
+}
+
+.app-modal {
+    width: min(960px, 96vw);
+    max-height: 92vh;
+    background: #fff;
+    border: 1px solid #d9e2ef;
+    border-radius: 14px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, .32);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    overflow: hidden;
+}
+
+.image-preview-modal {
+    width: min(960px, 96vw);
+}
+
+.image-delete-modal {
+    width: min(520px, 94vw);
+    background: #fff;
+    border: 1px solid #d9e2ef;
+    border-radius: 14px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, .32);
+    overflow: hidden;
+}
+
+.app-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e8edf5;
+}
+
+.app-modal-eyebrow {
+    margin: 0;
+    font-size: .76rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #607089;
+}
+
+.app-modal-title {
+    margin: .2rem 0 0;
+    font-size: 1rem;
+    color: #1f2a44;
+    overflow-wrap: anywhere;
+}
+
+.app-modal-close-icon {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d7dfeb;
+    border-radius: 8px;
+    background: #fff;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.app-modal-close-icon:hover {
+    border-color: #b7c9f7;
+    color: #315fdf;
+    background: #f8fbff;
+}
+
+.app-modal-body {
+    padding: 12px 16px;
+    overflow: auto;
+    background: #fbfcff;
+}
+
+.app-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px 16px;
+    border-top: 1px solid #e8edf5;
+    background: #fff;
+}
+
+.image-delete-copy {
+    margin: 0;
+    color: #475569;
+    font-size: .95rem;
+}
+
+.image-delete-footer {
+    gap: .5rem;
+}
+
+.image-delete-confirm-btn {
+    border-color: #ef4444;
+    color: #b91c1c;
+}
+
+.image-delete-confirm-btn:hover:not(:disabled) {
+    background: #fef2f2;
+    border-color: #dc2626;
+    color: #991b1b;
+}
+
+.image-empty-state {
+    padding: 2.25rem 1.5rem;
+}
+
+@media (max-width: 700px) {
+    .image-upload-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .camera-area {
+        margin-left: 14px;
+        margin-right: 14px;
+    }
+
+    .image-filename-group {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .image-preview-wrapper {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .image-results-meta {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: .3rem;
+    }
+
+    .image-action-group {
+        width: 100%;
+    }
+
+    .image-preview-modal {
+        width: min(98vw, 98vw);
+        max-height: 95vh;
+    }
+}
+
+/* =====================================================
    PRINT / PDF AREA — always rendered, hidden off-screen
    ===================================================== */
 .print-area {

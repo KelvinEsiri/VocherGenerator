@@ -1,5 +1,29 @@
 window.voucherApp = {
 
+    showToast: function (message, type) {
+        const tone = type === 'error'
+            ? { bg: '#dc2626', shadow: 'rgba(220,38,38,.35)' }
+            : { bg: '#4f46e5', shadow: 'rgba(79,70,229,.35)' };
+
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.style.cssText = [
+            'position:fixed', 'bottom:1.5rem', 'right:1.5rem',
+            `background:${tone.bg}`, 'color:#fff',
+            'padding:.45rem 1rem', 'border-radius:8px',
+            'font-size:.875rem', 'font-family:sans-serif',
+            `box-shadow:0 4px 12px ${tone.shadow}`,
+            'z-index:99999', 'opacity:1',
+            'transition:opacity .35s ease'
+        ].join(';');
+
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 350);
+        }, 1500);
+    },
+
     print: function () {
         window.print();
     },
@@ -17,23 +41,7 @@ window.voucherApp = {
             document.execCommand('copy');
             document.body.removeChild(ta);
         }
-        // Toast feedback
-        const toast = document.createElement('div');
-        toast.textContent = '✓ Copied!';
-        toast.style.cssText = [
-            'position:fixed', 'bottom:1.5rem', 'right:1.5rem',
-            'background:#4f46e5', 'color:#fff',
-            'padding:.45rem 1rem', 'border-radius:8px',
-            'font-size:.875rem', 'font-family:sans-serif',
-            'box-shadow:0 4px 12px rgba(79,70,229,.35)',
-            'z-index:99999', 'opacity:1',
-            'transition:opacity .35s ease'
-        ].join(';');
-        document.body.appendChild(toast);
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            setTimeout(() => toast.remove(), 350);
-        }, 1500);
+        window.voucherApp.showToast('Copied!', 'success');
     },
 
     downloadPdf: async function () {
@@ -173,4 +181,57 @@ window.voucherApp = {
     }
 };
 
+// ── Image Capture (camera) ───────────────────────────────────────────────────
+window.imageCaptureApp = {
+    _stream: null,
 
+    startCamera: async function (videoId) {
+        try {
+            const video = document.getElementById(videoId);
+            if (!video) return false;
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            window.imageCaptureApp._stream = stream;
+            video.srcObject = stream;
+            return true;
+        } catch (err) {
+            console.error('Camera start error:', err);
+            return false;
+        }
+    },
+
+    stopCamera: function (videoId) {
+        if (window.imageCaptureApp._stream) {
+            window.imageCaptureApp._stream.getTracks().forEach(function (track) { track.stop(); });
+            window.imageCaptureApp._stream = null;
+        }
+        const video = document.getElementById(videoId);
+        if (video) { video.srcObject = null; }
+    },
+
+    captureFrame: function (videoId, canvasId, thumbWidth) {
+        const video = document.getElementById(videoId);
+        const canvas = document.getElementById(canvasId);
+        if (!video || !canvas || !video.videoWidth) return null;
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const fullDataUrl = canvas.toDataURL('image/png');
+
+        const ratio = video.videoHeight / video.videoWidth;
+        const tWidth = Math.max(80, Number(thumbWidth) || 220);
+        const tHeight = Math.max(60, Math.round(tWidth * ratio));
+
+        const thumbCanvas = document.createElement('canvas');
+        thumbCanvas.width = tWidth;
+        thumbCanvas.height = tHeight;
+        thumbCanvas.getContext('2d').drawImage(video, 0, 0, tWidth, tHeight);
+        const thumbnailDataUrl = thumbCanvas.toDataURL('image/png');
+
+        return {
+            fullDataUrl,
+            thumbnailDataUrl
+        };
+    }
+};
